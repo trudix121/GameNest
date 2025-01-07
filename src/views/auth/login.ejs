@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameNest - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Login to Your Account</h2>
+            <p class="mt-2 text-gray-600">Welcome back to GameNest</p>
+        </div>
+
+        <form class="space-y-6" id="loginForm" action="/auth/login" method="POST">
+            <input type="hidden" name="_csrf" value=<%= csrfToken %> >
+            <!-- Email Field -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Or Username</label>
+                <div class="mt-1">
+                    <input type="text" id="email" name="credentials" required
+                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <div class="mt-1 relative">
+                    <input type="password" id="password" name="password" required
+                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <button type="button" id="togglePassword" 
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 cursor-pointer">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Login
+                </button>
+            </div>
+
+            <!-- Register Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account? 
+                    <a href="/auth/register" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Create an account
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>
+
