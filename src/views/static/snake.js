@@ -17,7 +17,7 @@ const GAME_CONFIG = {
 let gameState = {
     snake: [{ x: 9 * GAME_CONFIG.box, y: 9 * GAME_CONFIG.box }],
     direction: null,
-    food: null,
+    food: [], // Change from null to an array
     score: 0,
     highScore: localStorage.getItem('snakeHighScore') || 0,
     gameInterval: null
@@ -48,17 +48,23 @@ function drawGrid() {
     }
 }
 
-function generateFoodPosition(snake) {
-    const position = {
-        x: Math.floor(Math.random() * (GAME_CONFIG.width / GAME_CONFIG.box)) * GAME_CONFIG.box,
-        y: Math.floor(Math.random() * (GAME_CONFIG.height / GAME_CONFIG.box)) * GAME_CONFIG.box
-    };
+function generateFoodPositions(snake, count) {
+    const positions = [];
+    
+    while (positions.length < count) {
+        const position = {
+            x: Math.floor(Math.random() * (GAME_CONFIG.width / GAME_CONFIG.box)) * GAME_CONFIG.box,
+            y: Math.floor(Math.random() * (GAME_CONFIG.height / GAME_CONFIG.box)) * GAME_CONFIG.box
+        };
 
-    // Check if food spawns on snake
-    if (snake.some(segment => segment.x === position.x && segment.y === position.y)) {
-        return generateFoodPosition(snake);
+        // Check if food spawns on snake or already exists in positions
+        if (!snake.some(segment => segment.x === position.x && segment.y === position.y) &&
+            !positions.some(pos => pos.x === position.x && pos.y === position.y)) {
+            positions.push(position);
+        }
     }
-    return position;
+    
+    return positions;
 }
 
 function drawSnake() {
@@ -72,18 +78,18 @@ function drawSnake() {
 }
 
 function drawFood() {
-    if (gameState.food) {
+    gameState.food.forEach(food => {
         ctx.fillStyle = '#DC2626';
         ctx.beginPath();
         ctx.arc(
-            gameState.food.x + GAME_CONFIG.box / 2,
-            gameState.food.y + GAME_CONFIG.box / 2,
+            food.x + GAME_CONFIG.box / 2,
+            food.y + GAME_CONFIG.box / 2,
             GAME_CONFIG.box / 2 - 2,
             0,
             Math.PI * 2
         );
         ctx.fill();
-    }
+    });
 }
 
 function draw() {
@@ -92,8 +98,9 @@ function draw() {
     // Draw grid first
     drawGrid();
 
-    if (!gameState.food) {
-        gameState.food = generateFoodPosition(gameState.snake);
+    // Generate food if not present
+    if (gameState.food.length === 0) {
+        gameState.food = generateFoodPositions(gameState.snake, 3); // Generate 3 food items
     }
     
     drawSnake();
@@ -108,13 +115,18 @@ function draw() {
     if (gameState.direction === 'RIGHT') snakeX += GAME_CONFIG.box;
     if (gameState.direction === 'DOWN') snakeY += GAME_CONFIG.box;
 
-    // Check if snake eats food
-    if (snakeX === gameState.food.x && snakeY === gameState.food.y) {
+    // Check if snake eats any food
+    const foodIndex = gameState.food.findIndex(food => snakeX === food.x && snakeY === food.y);
+    
+    if (foodIndex !== -1) {
         gameState.score++;
         document.getElementById('score').innerText = `Score: ${gameState.score}`;
-        gameState.food = generateFoodPosition(gameState.snake);
+        gameState.food.splice(foodIndex, 1); // Remove eaten food
+
+        // Optionally add more food when one is eaten
+        gameState.food.push(...generateFoodPositions(gameState.snake, 1)); // Add one new food item
     } else {
-        gameState.snake.pop();
+        gameState.snake.pop(); // Remove last segment of the snake if no food is eaten
     }
 
     // Check collision with walls or self
@@ -149,43 +161,43 @@ function gameOver() {
     restartButton.classList.remove('hidden');
     overlay.style.display = 'flex';
     
-    if (gameState.score > 0) {
-        sendScore(gameState.score);
-    }
+   if (gameState.score > 0) {
+       sendScore(gameState.score);
+   }
 }
 
 async function sendScore(score) {
-    try {
-        // Calculate game duration
-        const gameDuration = Date.now() - gameStartTime;
-        
-        // Only send score if game duration is reasonable
-        if (gameDuration < 1000) {
-            console.error('Invalid game duration');
-            return;
-        }
+   try {
+       // Calculate game duration
+       const gameDuration = Date.now() - gameStartTime;
+       
+       // Only send score if game duration is reasonable
+       if (gameDuration < 1000) {
+           console.error('Invalid game duration');
+           return;
+       }
 
-        const response = await fetch('/home/game/api/snake', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin', // Added for security
-            body: JSON.stringify({ 
-                score,
-                gameId: window.GAME_ID,
-                duration: gameDuration
-            })
-        });
+       const response = await fetch('/home/game/api/snake', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           credentials: 'same-origin', // Added for security
+           body: JSON.stringify({ 
+               score,
+               gameId: window.GAME_ID,
+               duration: gameDuration
+           })
+       });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to submit score');
-        }
+       if (!response.ok) {
+           const errorData = await response.json();
+           throw new Error(errorData.error || 'Failed to submit score');
+       }
 
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error('Score submission failed');
-        }
-        
+       const data = await response.json();
+       if (!data.success) {
+           throw new Error('Score submission failed');
+       }
+       
    } catch (error) {
        console.error('Error sending score:', error);
        alert('Failed to save score. Please try again.');
@@ -200,7 +212,7 @@ function startGame() {
    gameState = {
        snake: [{ x: 9 * GAME_CONFIG.box, y: 9 * GAME_CONFIG.box }],
        direction: 'RIGHT', // Set initial direction
-       food: generateFoodPosition([{ x: 9 * GAME_CONFIG.box, y: 9 * GAME_CONFIG.box }]),
+       food: generateFoodPositions([{ x: 9 * GAME_CONFIG.box, y: 9 * GAME_CONFIG.box }], 5), // Start with multiple foods
        score: 0,
        highScore: gameState.highScore,
        gameInterval: null

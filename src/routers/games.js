@@ -2,110 +2,40 @@ const express = require('express');
 const router = express.Router();
 const jwtverify = require('../middlewares/jwt');
 const crypto = require('crypto');
-const cookiejwt = require('../middlewares/jwt');
 const { pool } = require('../db/postdb');
 const add_log = require('../lib/log');
-const { type } = require('os');
 
 // Statics
-router.use(express.static('src/views/games/static'));
+
 
 // JWT verification middleware
 router.use(jwtverify);
 
+// Game status management
+const games = {
+   'snake': true,
+    'tetris': true
+};
 
+router.get('/selector', (req, res) => {
+    res.render("games/selector");
+});
 
-
-router.get('/selector', (req,res)=>{
-    res.render("games/selector")
-})
-
-
-
-function game_active(req,res, next, game){
-    if(games[`${game}`] == false){ return res.send('Sorry, This game is For moment Dezactivated')}
+function game_active(req, res, next, game) {
+    if (!games[game]) {
+        return res.send('Sorry, This game is currently deactivated');
+    }
     next();
 }
 
-games = {
-    'snake':true
-}
-
-
-/*  SNAKE GAME */
-
+// Configuration for games
 const config = {
-    'x_money': 5,
-    'max_score_per_second': 2, // Maximum possible score per second
-    'max_game_duration': 1000 * 60 * 30, // 30 minutes
-    'min_game_duration': 1000 // Minimum 1 second game duration
-};
-
-const verifyGame = async (req, res, next) => {
-    const { gameId, score } = req.body;
-    const userId = req.user.id;
-
-    try {
-        // Check if game exists
-        const gameData = activeGames.get(gameId);
-        if (!gameData) {
-            return res.status(400).json({ error: 'Invalid game session' });
-        }
-
-        // Verify game belongs to user
-        if (gameData.userId !== userId) {
-            await add_log('security_violation', userId, {
-                type: 'game_snake',
-                reason: 'unauthorized_game_session',
-                gameId
-            });
-            return res.status(403).json({ error: 'Unauthorized game session' });
-        }
-
-        // Verify game hasn't expired
-        const gameDuration = Date.now() - gameData.startTime;
-        if (gameDuration > config.max_game_duration) {
-            activeGames.delete(gameId);
-            return res.status(400).json({ error: 'Game session expired' });
-        }
-
-        // Verify minimum game duration
-        if (gameDuration < config.min_game_duration) {
-            await add_log('security_violation', userId, {
-                type: 'game_snake',
-                reason: 'suspicious_game_duration',
-                duration: gameDuration
-            });
-            return res.status(400).json({ error: 'Invalid game duration' });
-        }
-
-        // Verify score is possible based on duration
-        const maxPossibleScore = Math.floor(gameDuration / 1000) * config.max_score_per_second;
-        if (score > maxPossibleScore) {
-            await add_log('security_violation', userId, {
-                type: 'game_snake',
-                reason: 'impossible_score',
-                score,
-                maxPossible: maxPossibleScore
-            });
-            return res.status(400).json({ error: 'Invalid score' });
-        }
-
-        // Verify game hasn't already been submitted
-        if (gameData.submitted) {
-            await add_log('security_violation', userId, {
-                type: 'game_snake',
-                reason: 'duplicate_submission',
-                gameId
-            });
-            return res.status(400).json({ error: 'Score already submitted' });
-        }
-
-        next();
-    } catch (error) {
-        console.error('Game verification error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    'x_money_snake': 5,
+    'x_money_tetris': 2,
+   'max_score_per_second': 2,
+   'max_score_per_second_tetris': 50,
+   'max_game_duration': 1000 * 60 * 30, // 30 minutes
+   'min_game_duration': 1000 // Minimum 1 second game duration
 };
 
 // Store active games in memory with score tracking
@@ -118,88 +48,133 @@ const generateGameId = (userId) => {
     return crypto.createHash('sha256').update(data).digest('hex');
 };
 
-// Main snake game route
-router.get('/snake',  (req, res,next) => {
-    game_active(req,res,next,'snake')
-
-
-    const gameId = generateGameId(req.user.id);
-    
-    // Store game session with enhanced security data
-    activeGames.set(gameId, {
-        userId: req.user.id,
-        startTime: Date.now(),
-        submitted: false
-    });
-
-    res.render('games/snake', {
-        user: req.user,
-        gameId: gameId
-    });
-});
-
-// Secure score submission route
-router.post('/api/snake', verifyGame, async (req, res) => {
+// Verify game submissions
+const verifyGame = async (req, res, next, gameType) => {
     try {
         const { score, gameId } = req.body;
         const userId = req.user.id;
         const gameData = activeGames.get(gameId);
+        if (!gameData) {
+            return res.status(400).json({ error: 'Invalid game session' });
+        }
+        if (gameData.userId!== userId) {
+            await add_log('security_violation', userId, { type: gameType, reason: 'unauthorized_game_session', gameId });
+            return res.status(403).json({ error: 'Unauthorized game session' });
+        }
+        const gameDuration = Date.now() - gameData.startTime;
+        if (gameDuration > config.max_game_duration) {
+            activeGames.delete(gameId);
+            return res.status(400).json({ error: 'Game session expired' });
+        }
+        if (gameDuration < config.min_game_duration) {
+            await add_log('security_violation', userId, { type: gameType, reason:'suspicious_game_duration', duration: gameDuration });
+            return res.status(400).json({ error: 'Invalid game duration' });
+        }
+        const maxScorePerSecond = gameType === 'game_snake'? config.max_score_per_second : config.max_score_per_second_tetris;
+        const maxPossibleScore = Math.floor(gameDuration / 1000) * maxScorePerSecond;
+        if (score > maxPossibleScore) {
+            await add_log('security_violation', userId, { type: gameType, reason: 'impossible_score', score, maxPossible: maxPossibleScore });
+            return res.status(400).json({ error: 'Invalid score' });
+        }
+        if (gameData.submitted) {
+            await add_log('security_violation', userId, { type: gameType, reason: 'duplicate_submission', gameId });
+            return res.status(400).json({ error: 'Score already submitted' });
+        }
 
-        // Calculate reward
-        const money = Math.floor(score * config.x_money);
+        // Dacă totul e valid, continuă
+        next();
+    } catch (error) {
+        console.error('Game verification error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
-        // Update user's money and log the transaction
-        await pool.query(
-            "UPDATE users SET money = money + $1 WHERE id = $2",
-            [money, userId]
-        );
+// Main snake game route
+router.get('/snake', (req, res, next) => {
+    game_active(req, res, next,'snake');
+    const gameId = generateGameId(req.user.id);
+    activeGames.set(gameId, { userId: req.user.id, startTime: Date.now(), submitted: false });
+    res.render('games/snake', { user: req.user, gameId });
+});
 
-        // Log the successful game
-        await add_log('game_snake', userId, {
-            score: score,
-            money_made: money,
-            gameId: gameId,
-            duration: Date.now() - gameData.startTime
-        });
+// Secure score submission route for Snake
+router.post('/api/snake', async (req, res) => {
+    try {
+        await verifyGame(req, res, () => { },'snake');
+        if (res.headersSent) return; // Evită continuarea dacă răspunsul a fost trimis
 
-        // Mark game as submitted and remove from active games
-        gameData.submitted = true;
-        activeGames.delete(gameId);
+        const { score, gameId } = req.body;
+        const userId = req.user.id;
+        const money = Math.floor(score * config.x_money_snake);
 
-        res.status(200).json({
-            success: true,
-            score: score,
-            money: money
-        });
+        await pool.query("UPDATE users SET money = money + $1 WHERE id = $2", [money, userId]);
+        await add_log('game_snake', userId, { score: score, money_made: money, gameId });
+
+        const gameData = activeGames.get(gameId);
+        if (gameData) {
+            gameData.submitted = true; // Mark as submitted
+            activeGames.delete(gameId); // Optionally remove from active games
+        }
+
+        res.status(200).json({ success: true, score: score, money: money });
     } catch (error) {
         console.error('Score submission error:', error);
-        res.status(500).json({ error: 'Failed to process score' });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Failed to process score' });
+        }
     }
 });
 
-// Cleanup expired games
+// Main tetris game route
+router.get('/tetris', (req, res, next) => {
+    game_active(req, res, next,'tetris');
+    const gameId = generateGameId(req.user.id);
+
+    activeGames.set(gameId, { userId: req.user.id, startTime: Date.now(), submitted: false });
+
+    res.render('games/tetris', { user: req.user, gameId });
+});
+
+// Secure score submission route for Tetris
+router.post('/api/tetris', async (req, res) => {
+    try {
+        await verifyGame(req, res, () => { },'tetris');
+        if (res.headersSent) return; // Evită continuarea dacă răspunsul a fost trimis
+
+        const { score, gameId } = req.body;
+        const userId = req.user.id;
+        const money = Math.floor(score * config.x_money_tetris);
+
+        await pool.query("UPDATE users SET money = money + $1 WHERE id = $2", [money, userId]);
+        await add_log('game_tetris', userId, { score, money_made: money, gameId });
+
+        const gameData = activeGames.get(gameId);
+        if (gameData) {
+            gameData.submitted = true; // Mark as submitted
+            activeGames.delete(gameId); // Optionally remove from active games
+        }
+
+        res.status(200).json({ success: true, score, money });
+    } catch (error) {
+        console.error('Score submission error:', error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Failed to process score' });
+        }
+    }
+});
+
+// Cleanup expired games periodically
 const cleanupExpiredGames = () => {
     const now = Date.now();
-    let cleaned = 0;
 
     for (const [gameId, gameData] of activeGames.entries()) {
         if (now - gameData.startTime > config.max_game_duration) {
             activeGames.delete(gameId);
-            cleaned++;
+            console.log(`Removed expired session for ${gameId}`);
         }
-    }
-
-    if (cleaned > 0) {
-        console.log(`Cleaned ${cleaned} expired game sessions`);
     }
 };
 
-async function clearexpired() {
-    await setInterval(cleanupExpiredGames, 1000 * 60 * 15);
-    await console.log('Started expired sessions cleanup service');
-}
-
-// Start cleanup service
-clearexpired();
+setInterval(cleanupExpiredGames, 1000 * 60 * 15); // Cleanup every 15 minutes
 
 module.exports = router;

@@ -18,12 +18,12 @@ const games = require('./routers/games')
 
 
 
-
 // Aplică rate limiter
 app.use(rateLimiterWithLogging);
 app.use(morgan('dev'))
 app.use(cookieParser());
 app.use(cors())
+app.use(express.static('src/views/static'));
 
 // Routes
 app.use('/', index);

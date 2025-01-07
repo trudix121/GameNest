@@ -12,6 +12,7 @@ router.get('/', (req,res)=>{
 })
 
 router.get('/profile', (req,res)=>{
+    console.log(req.user)
     res.render('home/profile', {user:req.user})
 })
 
@@ -24,6 +25,7 @@ router.post('/profile/search', async (req,res)=>{
         return res.render('libs/error', { code:404, error:'Profile Not Found' })
     }
     else if(profile.rows.length > 0 ){
+        //console.log(profile.rows[0])
         return res.render('home/profile', {user:profile.rows[0]})
     }
 

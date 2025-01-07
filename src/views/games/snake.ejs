@@ -4,54 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Your existing styles here */
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white bg-opacity-90 p-8 rounded-xl shadow-2xl text-center max-w-md w-full">
-        <h1 class="text-4xl font-bold mb-6 text-gray-800 tracking-tight">🐍 Snake Game</h1>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
+    <div class="bg-white bg-opacity-90 p-8 rounded-xl shadow-2xl text-center max-w-2xl w-full">
+        <h1 class="text-4xl font-bold mb-6 text-gray-800 tracking-tight flex items-center justify-center gap-2">
+            <span class="text-5xl">🐍</span> 
+            Snake Game
+        </h1>
         
-        <!-- User and game session info -->
+        <!-- Game Info -->
         <div class="mb-4 text-sm text-gray-600">
-            Player: <%= user.username %> 
+            Session ID: <%=gameId%>
             <br>
-            Session ID: <%= gameId %>
+            Ready to play!
         </div>
 
+        <!-- Game Container -->
         <div class="relative">
-            <canvas id="gameCanvas" width="400" height="400" class="bg-gray-50"></canvas>
+            <canvas id="gameCanvas" width="400" height="400" 
+                    class="mx-auto bg-gray-50 rounded-lg border border-gray-200 shadow-lg"></canvas>
             
-            <div id="overlay" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                <div class="text-white text-center p-4">
-                    <h2 class="text-2xl font-bold mb-4">Press Start to Play!</h2>
-                    <p class="text-sm mb-2">Use arrow keys to control the snake</p>
+            <div id="overlay" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg backdrop-blur-sm">
+                <div class="text-white text-center p-6 bg-black bg-opacity-40 rounded-xl">
+                    <h2 class="text-3xl font-bold mb-4">Ready to Play?</h2>
+                    <p class="text-lg mb-2">Use arrow keys to control the snake</p>
+                    <div class="grid grid-cols-3 gap-2 text-sm mt-4 max-w-xs mx-auto">
+                        <div></div>
+                        <div class="bg-white bg-opacity-20 p-2 rounded">↑</div>
+                        <div></div>
+                        <div class="bg-white bg-opacity-20 p-2 rounded">←</div>
+                        <div class="bg-white bg-opacity-20 p-2 rounded">↓</div>
+                        <div class="bg-white bg-opacity-20 p-2 rounded">→</div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Controls -->
         <div class="mt-6 space-y-4">
             <div class="flex justify-center space-x-4">
-                <button id="startButton" class="game-button px-6 py-3 bg-emerald-500 text-white rounded-lg font-semibold hover:bg-emerald-600">
+                <button id="startButton" 
+                        class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-semibold hover:bg-emerald-600 transition-all transform hover:scale-105 shadow-lg">
                     Start Game
                 </button>
-                <button id="restartButton" class="game-button hidden px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600">
+                <button id="restartButton" 
+                        class="hidden px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all transform hover:scale-105 shadow-lg">
                     Play Again
                 </button>
             </div>
-            
-            <div class="flex justify-between items-center px-4">
-                <div id="score" class="score-display text-2xl font-bold text-gray-800">Score: 0</div>
-                <div id="highScore" class="score-display text-2xl font-bold text-gray-800">High Score: 0</div>
+
+            <div class="flex justify-between items-center px-4 mt-6">
+                <div class="bg-gray-100 p-4 rounded-lg shadow">
+                    <div class="text-sm text-gray-600 mb-1">Current Score</div>
+                    <div id="score" class="text-2xl font-bold text-gray-800">0</div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg shadow">
+                    <div class="text-sm text-gray-600 mb-1">High Score</div>
+                    <div id="highScore" class="text-2xl font-bold text-emerald-600">0</div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Add gameId to window object for access in snake.js -->
-    <script>
-        window.GAME_ID = '<%= gameId %>';
-    </script>
-    <script src="snake.js"></script>
+    <script> window.GAME_ID= '<%=gameId%>'; </script>
+    <script src="/snake.js"></script>
 </body>
 </html>
