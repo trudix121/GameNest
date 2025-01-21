@@ -5,8 +5,6 @@ const crypto = require('crypto');
 const { pool } = require('../db/postdb');
 const add_log = require('../lib/log');
 
-// Statics
-
 
 // JWT verification middleware
 router.use(jwtverify);
@@ -22,10 +20,10 @@ router.get('/selector', (req, res) => {
 });
 
 function game_active(req, res, next, game) {
-    if (!games[game]) {
+    if (games[game] == false) {
         return res.send('Sorry, This game is currently deactivated');
     }
-    next();
+
 }
 
 // Configuration for games
@@ -81,7 +79,6 @@ const verifyGame = async (req, res, next, gameType) => {
             return res.status(400).json({ error: 'Score already submitted' });
         }
 
-        // Dacă totul e valid, continuă
         next();
     } catch (error) {
         console.error('Game verification error:', error);
