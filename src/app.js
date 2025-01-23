@@ -16,7 +16,7 @@ const index = require('./routers/index');
 const home = require('./routers/home');
 const games = require('./routers/games');
 const admin = require('./routers/admin');
-const api_client = require('./routers/api')
+const api = require('./routers/api')
 
 
 // Aplică rate limiter
@@ -32,7 +32,7 @@ app.use('/auth', auth);
 app.use('/home', home)
 app.use('/home/game', games)
 app.use('/admin', admin)
-app.use('/api', api_client)
+app.use('/api', api)
 
 app.listen(process.env.PORT, () => {
     console.log(`Server Started on http://localhost:${process.env.PORT}`);

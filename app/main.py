@@ -5,6 +5,8 @@ from getpass import getpass
 from core.core import logins
 import os
 import asyncio
+from core.secure import SecureStorage
+secure = SecureStorage()
 
 async def login():
     os.system('clear')
@@ -18,6 +20,8 @@ async def login():
         while len(token) == 0:
             print("Token cannot be empty!")
             token = input("Enter your token: ")
+            if(len(token) > 0): await logins(token=token)
+            
 
     if(inmp == 2):
         username = input("Enter your Username:")
@@ -37,6 +41,8 @@ async def menu():
     option = int(input('>>>'))
     if(option == 1):
         await login()
+    if(option == 2):
+        print(Fore.RED +" CURRENTLY IS AVAILABLE ONLY IN BROWSER , LINK: http://localhost:5000/auth/register ")
 
 
 

@@ -7,15 +7,14 @@ router.use(cookiejwt)
 
 const announcements = {
     announcements_1:{
-        content:'hi'
-    },
+        content:'<a href="/api/gen_client"  class="block px-4 py-2 text-center bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-200">Generate Client Token </a>' },
     announcements_2:{
         content:'text'
     }
 }
 
 router.get('/', (req,res)=>{
-    res.render('home/home', {user: req.user, annon:announcements.toArray()})
+    res.render('home/home', {user: req.user, annon:announcements})
 })
 
 router.get('/profile', (req,res)=>{

@@ -5,7 +5,7 @@ const { MemoryStore } = require('express-rate-limit');
 // Configurația de bază pentru rate limiter
 const config = {
     windowMs: 3 * 60 * 1000, // 3 minute
-    max: 100, // Maxim 10 request-uri
+    max: 100, // Maxim 100 request-uri
     message: {
         status: 'error',
         message: 'Too many requests, please try again later.',
