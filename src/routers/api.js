@@ -15,7 +15,7 @@ router.use(express.urlencoded({extended:true}))
 router.use(express.json())
 
 router.get('/gen_client', cookiejwt , async (req,res)=>{
-    console.log(req.user)
+//    console.log(req.user)
     const rest = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id])
     if(rest.rows[0]['client_token'] !== null){
         res.render("libs/error", {'code':203, 'error':`Client Token Already Generated, Token: ${rest.rows[0]['client_token']}`, 'redirect':'/home'})
@@ -68,7 +68,7 @@ router.post("/snake", async (req,res)=>{
     }
     else if(game_ids.has(req.body.game_id) == false){
         await pool.query('UPDATE users SET money = $1 WHERE id = $2', [req.body.score, req.body.id]).then(()=>{
-             createClientLog(`User with id ${req.body.}`)
+             createClientLog(`User with id ${req.body.id}`)
         })
         game_ids.set(req.body.game_id, req.body.id)
         res.status(200).json({'reason':'ok'})

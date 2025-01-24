@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const cookiejwt = require('../middlewares/jwt')
 const { pool } = require('../db/postdb')
-
+const SHOP_CATEGORIES = require('../lib/shop_items')
+const purchase = require('../middlewares/purchase')
 router.use(cookiejwt)
 
 const announcements = {
@@ -21,21 +22,52 @@ router.get('/profile', (req,res)=>{
     //console.log(req.user)
     res.render('home/profile', {user:req.user})
 })
+router.post('/profile/search', async (req, res) => {
+    const { username } = req.body;
 
-router.post('/profile/search', async (req,res)=>{
-    const { username } = req.body
+    try {
+        // Căutăm profilul în baza de date
+        const profile = await pool.query(`SELECT * FROM users WHERE username = $1`, [username]);
 
-    const profile = await pool.query(`SELECT * FROM users WHERE username = $1`, [ username ])
+        if (profile.rows.length <= 0) {
+            return res.render('libs/error', {
+                code: 404,
+                error: 'Profile Not Found',
+                redirect: '/home',
+            });
+        }
 
-    if(profile.rows.length <= 0 ){
-        return res.render('libs/error', { code:404, error:'Profile Not Found', redirect:'/home' })
+        const profileData = profile.rows[0];
+
+        // Adăugăm `vip = true` direct în profil dacă este cazul
+        if (profileData.custom_role === 'VIP') {
+            profileData.vip = true;
+            profileData.username = `VIP ${profileData.username}`
+        }
+
+        return res.render('home/profile', { user: profileData });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).render('libs/error', {
+            code: 500,
+            error: 'Internal Server Error',
+            redirect: '/home',
+        });
     }
-    else if(profile.rows.length > 0 ){
-        //console.log(profile.rows[0])
-        return res.render('home/profile', {user:profile.rows[0]})
-    }
+});
 
-    
+
+
+router.get('/shop', async (req, res) => {
+    res.render('home/shop', {
+        money: req.user.money,
+        roles: SHOP_CATEGORIES.roles,
+        gamePerks: SHOP_CATEGORIES.gamePerks,
+        customItems: SHOP_CATEGORIES.customItems
+    });
+});
+
+router.get('/purchase/:type/:id',  purchase, async (req,res)=>{
 })
 
 module.exports = router

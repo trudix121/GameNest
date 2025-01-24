@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameNest Shop</title>
+    <link href="/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8">GameNest Shop</h1>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Roles & Badges Category -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Roles & Badges</h2>
+                <% roles.forEach(function(role) { %>
+                    <div class="border-b pb-4 mb-4">
+                        <h3 class="text-xl font-medium"><%= role.name %></h3>
+                        <p class="text-gray-600 mb-2">$<%= role.price.toFixed(2) %></p>
+                        <div class="space-y-2">
+                            <% role.features.forEach(function(feature) { %>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span><%= feature %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <a href="/home/purchase/role/<%= role.id %>">
+                            <button class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Purchase</button>
+                        </a>
+                    </div>
+                <% }); %>
+            </div>
+
+            <!-- Game Perks Category -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Game Perks</h2>
+                <% gamePerks.forEach(function(perk) { %>
+                    <div class="border-b pb-4 mb-4">
+                        <h3 class="text-xl font-medium"><%= perk.name %></h3>
+                        <p class="text-gray-600 mb-2">$<%= perk.price.toFixed(2) %></p>
+                        <div class="space-y-2">
+                            <% perk.features.forEach(function(feature) { %>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span><%= feature %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <a href="/home/purchase/perk/<%= perk.id %>">
+                            <button class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Purchase</button>
+                        </a>
+                    </div>
+                <% }); %>
+            </div>
+
+            <!-- Custom Items Category -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Custom Items</h2>
+                <% customItems.forEach(function(item) { %>
+                    <div class="border-b pb-4 mb-4">
+                        <h3 class="text-xl font-medium"><%= item.name %></h3>
+                        <p class="text-gray-600 mb-2">$<%= item.price.toFixed(2) %></p>
+                        <div class="space-y-2">
+                            <% item.features.forEach(function(feature) { %>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span><%= feature %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <a href="/home/purchase/item/<%= item.id %>">
+                            <button class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Purchase</button>
+                        </a>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-col items-center">
+        <a href="/home" class="block w-4/5">
+            <button class="w-full rounded-md bg-blue-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                Return to HomePage
+            </button>
+        </a>
+        <p class="w-4/5 text-center text-sm mt-2 rounded-md bg-blue-600 py-2 px-4 text-white">
+            Your current balance: <%=money%>$
+        </p>
+    </div>
+</body>
+</html>

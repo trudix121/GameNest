@@ -20,11 +20,15 @@ async function cookiejwt(req, res, next) {
             return res.status(403).json({ message: 'Invalid or Expired Token' });
         }
         const rest = await getUserData(decoded.username)
-        console.log(rest)
+     //   console.log(rest)
+     
+        //console.log(rest.rows[0].custom_role)
         req.user = rest; // Adaugă datele utilizatorului în req
+        if(rest.custom_role == 'VIP'){req.user.username = `VIP ${rest.username}`; req.user.vip = true} 
         next(); // Trece la următorul middleware
     } catch (err) {
-        return res.status(403).json({ message: 'Invalid or Expired Token' });
+        console.log(err)
+        return res.status(403).json({ message: 'Invalids or Expired Token' });
     }
 }
 

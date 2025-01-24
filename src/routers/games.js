@@ -30,6 +30,7 @@ function game_active(req, res, next, game) {
 const config = {
     'x_money_snake': 5,
     'x_money_tetris': 2,
+    'x_money_vip': 1.5,
    'max_score_per_second': 2,
    'max_score_per_second_tetris': 50,
    'max_game_duration': 1000 * 60 * 30, // 30 minutes
@@ -102,18 +103,26 @@ router.post('/api/snake', async (req, res) => {
 
         const { score, gameId } = req.body;
         const userId = req.user.id;
-        const money = Math.floor(score * config.x_money_snake);
+        if(req.user.custom_role == 'VIP'){
 
-        await pool.query("UPDATE users SET money = money + $1 WHERE id = $2", [money, userId]);
-        await add_log('game_snake', userId, { score: score, money_made: money, gameId });
-
+            const money = Math.floor(score * config.x_money_snake * config.x_money_vip);     
+            await pool.query("UPDATE users SET money = money + $1 WHERE id = $2", [money, userId]);
+            await add_log('game_snake', userId, { score: score, money_made: money, role:req.user.custom_role, gameId });
+            res.status(200).json({ success: true, score: score, role:req.user.custom_role ,money: money });
+        }
+        else{
+            const money = Math.floor(score * config.x_money_snake);
+            await pool.query("UPDATE users SET money = money + $1 WHERE id = $2", [money, userId]);
+            await add_log('game_snake', userId, { score: score, money_made: money, gameId });
+            res.status(200).json({ success: true, score: score, money: money });
+        }
         const gameData = activeGames.get(gameId);
         if (gameData) {
             gameData.submitted = true; // Mark as submitted
             activeGames.delete(gameId); // Optionally remove from active games
         }
 
-        res.status(200).json({ success: true, score: score, money: money });
+       
     } catch (error) {
         console.error('Score submission error:', error);
         if (!res.headersSent) {
