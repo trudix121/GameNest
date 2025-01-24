@@ -6,11 +6,22 @@
     <title>Error <%= code %> - GameNest</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="text-center">
-        <h1 class="text-6xl font-bold text-red-600"><%= code %></h1>
-        <p class="mt-4 text-xl text-gray-700"><%= error %></p>
-        <a href="/" class="mt-6 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Return to Homepage</a>
+<body class="flex items-center justify-center min-h-screen bg-slate-50">
+    <div class="w-full max-w-md px-6">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-6 text-center bg-slate-100">
+                <h1 class="mt-4 text-4xl font-bold text-slate-800"><%= code %></h1>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-lg text-slate-600 mb-6"><%= error %></p>
+                <a href="<%=redirect%>" class="w-full inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Return to Homepage
+                </a>
+            </div>
+        </div>
+        <div class="mt-4 text-center text-slate-500 text-sm">
+            Need help? Contact support
+        </div>
     </div>
 </body>
 </html>

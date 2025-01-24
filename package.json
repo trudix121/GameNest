@@ -4,7 +4,9 @@
   "description": "Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!",
   "main": "index.js",
   "scripts": {
+    "build": "npm install && postcss src/views/static/tailwind.css -o src/views/static/style.css ",
     "dev": "npx nodemon src/app.js",
+    "tailwind:css": "postcss src/views/static/tailwind.css -o src/views/static/style.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -23,16 +25,22 @@
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "ioredis": "^5.4.2",
+    "ip": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.13.1",
+    "postcss-cli": "^11.0.0",
     "rate-limit-redis": "^4.2.0",
+    "request-ip": "^3.3.0",
     "supabase": "^2.2.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/express-rate-limit": "^5.1.3",
     "@types/node": "^22.10.5",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }

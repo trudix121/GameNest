@@ -13,23 +13,26 @@ app.set('views', 'src/views');
 // Import routes
 const auth = require('./routers/auth');
 const index = require('./routers/index');
-const home = require('./routers/home')
-const games = require('./routers/games')
-
-
+const home = require('./routers/home');
+const games = require('./routers/games');
+const admin = require('./routers/admin');
+const api = require('./routers/api')
 
 
 // Aplică rate limiter
 app.use(rateLimiterWithLogging);
 app.use(morgan('dev'))
 app.use(cookieParser());
-app.use(cors())
+//app.use(cors())
+app.use(express.static('src/views/static'));
 
 // Routes
 app.use('/', index);
 app.use('/auth', auth);
 app.use('/home', home)
 app.use('/home/game', games)
+app.use('/admin', admin)
+app.use('/api', api)
 
 app.listen(process.env.PORT, () => {
     console.log(`Server Started on http://localhost:${process.env.PORT}`);

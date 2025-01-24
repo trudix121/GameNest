@@ -15,7 +15,7 @@ async function run() {
   }
 }
 
-async function createUser(username, email, password, security_code, phone) {
+async function createUser(username, email, password, security_code, phone,user) {
   try {
     const rest = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
     if (rest.rows.length > 0) {
@@ -23,8 +23,8 @@ async function createUser(username, email, password, security_code, phone) {
     } else {
       const hashedPassword = await bcrypt.hash(password, 12); // Increased cost factor
       await pool.query(
-        'INSERT INTO users (username, email, password, security_code, phone) VALUES ($1, $2, $3, $4, $5)',
-        [username, email, hashedPassword, security_code, phone]
+        'INSERT INTO users (username, email, password, security_code, phone, role) VALUES ($1, $2, $3, $4, $5, $6)',
+        [username, email, hashedPassword, security_code, phone, user]
       );
       return { success: true };
     }
